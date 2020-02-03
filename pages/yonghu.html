@@ -1,0 +1,630 @@
+<script>
+	var dateParse=(dataString)=>{
+		  if(dataString){
+		    let date = new Date(dataString);
+		    let Y = date.getFullYear() + '-';
+		    let M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+		    let D = (date.getDate()< 10 ? '0'+date.getDate() : date.getDate())+' ';
+		    let h = (date.getHours()< 10 ? '0'+date.getHours() : date.getHours())+ ':';
+		    let m = (date.getMinutes()< 10 ? '0'+date.getMinutes() : date.getMinutes())+ ':';
+		    let s = (date.getSeconds()< 10 ? '0'+date.getSeconds() : date.getSeconds());
+		    return Y+M+D+h+m+s;
+		  }else{
+		    return '';
+		  }
+		}
+</script>
+<style>
+	.modal {
+		/*z-index: !important*/
+		position: fixed;
+		left: 50%;
+		top: 65%;
+		transform: translate(-50%,-50%);
+	}
+	.anniu {
+		position: relative;
+	}
+	.anniu .btn {
+		width: 180px;
+		position: absolute;
+		top: 0px;
+		right: 200px;
+		cursor: pointer;
+		z-index: 1;
+	}
+	.aa {
+		position: absolute;
+		top: 40%;
+		left: 45%;
+	}
+	.toast {
+		position: absolute;
+		left: 50%;
+		top: 35%;
+		transform: translate(-50%,-50%);
+	}
+</style>
+<div class="aa">
+	<button class="btn btn-danger" type="button" disabled>
+	  <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+	  Loading...
+	</button>
+	</div>
+<script>
+	setTimeout(function() {
+		$(".aa").empty()
+		},1000)
+</script>
+<script>
+	//全局变量
+	var baseURL = "http://203.195.246.58:7777";
+	//加载
+	function reload() {
+		$.get(baseURL+"/Jobhunter/findAll",function(a) {
+			if(a.status == 200) {
+				// alert(1)
+				$(".tbody1").empty()
+				a.data.forEach(function(item) {
+								$(`<tr>
+							<td><input type="checkbox" value="`+item.id+`"></td>
+							<td>`+item.username+`</td>
+							<td>`+item.realname+`</td>
+							<td>`+item.telephone+`</td>
+							<td>`+item.gender+`</td>
+							<td>`+dateParse(item.birth)+`</td>
+							<td>`+item.education+`</td>
+							<td><a href="#" class="mymodify"><i class="iconfont icon-xiugai" style="color:#333;"></i></a>&nbsp;&nbsp;&nbsp;<a href="#" class="mydel"><i class="iconfont icon-shanchu" style="color:#333;"></i></a></td>
+						</tr>
+						`).appendTo(".tbody1")						
+				})
+			}
+		})
+	}
+	//modal1显示
+	function modalshow(xiangqing_id){
+		$(".modal1").modal("show")
+		$(".modal-backdrop").remove()
+
+		// msg()
+		$.get(baseURL+"/Employment/findById","id="+xiangqing_id,function(a){
+			if(a.status == 200){
+				// alert(1)
+				// console.log(a.data)
+
+				toast_msg("即将显示详细信息")
+
+				//modal的置空
+				$(".modal1 .modal-body").empty()
+
+				var item = a.data
+				// a.data.forEach(function(item){
+					$(`<ul>
+							<li>ID：`+item.id+`</li>
+							<li>招聘标题：`+item.title+`</li>
+							<li>发布人：`+item.contactName+`</li>
+							<li>联系方式 ：`+item.contactPhone+`</li>
+							<li>职位：`+item.job+`</li>
+							<li>发布时间：`+dateParse(item.publishTime)+`</li>
+							<li>福利：`+item.welfare+`</li>
+							<li>薪水：`+item.salary+`</li>
+							<li>描述：`+item.description+`</li>
+							<li>招聘状态：`+item.status+`</li>
+							<li>数量：`+item.num+`</li>
+							<li>商业ID：`+item.businessId+`</li>
+						</ul>
+						`).appendTo($(".modal1 .modal-body"))
+				// })
+				
+			}
+		})
+	}
+	//modal1关闭
+	function modalclose(){
+		$(".modal1").modal("hide")
+	}
+	//modal2显示
+	function modal2show() {
+		$(".modal2").modal("show")
+		$(".modal-backdrop").remove()
+	}
+	//modal2关闭
+	function modal2close(){
+		$(".modal2").modal("hide")
+	}
+	//除重函数
+	function chuchong(arr){
+			var zu = []
+			for(let i = 0;i<arr.length;i++)
+			{
+				if(zu.indexOf(arr[i]) == -1)
+				{
+					zu.push(arr[i])
+				}
+			}
+			return zu
+		}
+	//添加Or修改客服信息函数
+	function add_modify(){
+			var id = sessionStorage.getItem("lid")
+			sessionStorage.setItem("lid","null")
+
+			var username = $("#username").val()
+			var realname = $("#realname").val()
+			var password = $("#password").val()
+			var education = $("#education").val()
+			var gender = $(".sex_select input[type=checkbox]").filter(":checked").val()
+			var telephone = $("#telephone").val()
+			var workTime = $("#workTime").val()
+			var currentStatus = $("#currentStatus").val()
+			var resume = $("#resume").val()
+
+			// console.log(gender)
+
+			if (id == "null") {
+
+				var data = {
+					
+					username,
+					realname,
+					password,
+					education,
+					gender,
+					telephone,
+					workTime,
+					currentStatus,
+					resume
+				}
+				$.post(baseURL+"/Jobhunter/saveOrUpdate",data,function(a) {
+					if (a.status == 200) {
+						toast_msg("添加成功！")
+						modal2close();
+						reload();
+					}
+					else {
+						toast_msg("提交失败")
+						modal2close()
+					}
+				})
+			}
+			else {
+				var data = {
+					id,
+					username,
+					realname,
+					password,
+					education,
+					gender,
+					telephone,
+					workTime,
+					currentStatus,
+					resume
+				}
+				$.post(baseURL+"/Jobhunter/saveOrUpdate",data,function(a) {
+					if(a.status == 200) {
+						toast_msg("modify is success")
+						reload()
+						modal2close()
+					}
+					else {
+						toast_msg("modify is defeat")
+						modal2close()
+					}
+				})
+			}
+			// console.log(data)
+	}
+	//toast的弹出
+	function toast_msg(msg) {
+		$(".toast").toast("show")
+		$(".toast .toast-body").text(msg)
+	}
+</script>
+
+<script>
+	$(function(){
+		//重载
+		reload()
+		//学历的筛选
+		$(".xueli-select").change(function(){
+			// alert(1)
+			if($(".xueli-select").val() == "")
+			{
+				$(".tbody1").empty()
+				reload()
+			}
+			else{
+				var education = $(this).val()
+				$.get(baseURL+"/Jobhunter/findByEducation","education="+education,function(a){
+					if(a.status == 200){
+						// alert(1)
+						toast_msg("筛选成功")
+						$(".tbody1").empty()
+						a.data.forEach(function(item){
+									$(`<tr>
+								<td><input type="checkbox" value="`+item.id+`"></td>
+								<td>`+item.username+`</td>
+								<td>`+item.realname+`</td>
+								<td>`+item.telephone+`</td>
+								<td>`+item.gender+`</td>
+								<td>`+dateParse(item.birth)+`</td>
+								<td>`+item.education+`</td>
+								<td><a href="#" class="mymodify"><i class="iconfont icon-xiugai" style="color:#333;"></i></a>&nbsp;&nbsp;&nbsp;<a href="#" class="mydel"><i class="iconfont icon-shanchu" style="color:#333;"></i></a></td>
+							</tr>
+							`).appendTo(".tbody1")						
+						})
+					}
+				})				
+			}
+
+		})
+		//性别的筛选
+		$(".sex-select").change(function(){
+			// alert(1)
+			if($(".sex-select").val() == "")
+			{
+				$(".tbody1").empty()
+				reload()
+			}
+			else{
+				var sex = $(this).val()
+				$.get(baseURL+"/Jobhunter/findByGender","gender="+sex,function(a){
+					if(a.status == 200){
+						// alert(1)
+						toast_msg("筛选成功")
+						$(".tbody1").empty()
+						a.data.forEach(function(item){
+									$(`<tr>
+								<td><input type="checkbox" value="`+item.id+`"></td>
+								<td>`+item.username+`</td>
+								<td>`+item.realname+`</td>
+								<td>`+item.telephone+`</td>
+								<td>`+item.gender+`</td>
+								<td>`+dateParse(item.birth)+`</td>
+								<td>`+item.education+`</td>
+								<td><a href="#" class="mymodify"><i class="iconfont icon-xiugai" style="color:#333;"></i></a>&nbsp;&nbsp;&nbsp;<a href="#" class="mydel"><i class="iconfont icon-shanchu" style="color:#333;"></i></a></td>
+							</tr>
+							`).appendTo(".tbody1")						
+						})
+					}
+				})				
+			}
+
+		})
+		//删除
+		$(".tbody1").on("click","a",function(event){
+			var id = $(event.target).parents("tr").children().eq(0).children().eq(0).attr("value")
+			// console.log($(this).attr("class"))
+			if($(this).attr("class") == "mydel") {
+				$.post(baseURL+"/Jobhunter/deleteById","id="+id,function(a){
+					if(a.status == 200){
+						// alert("成功")
+						toast_msg("删除成功")
+						reload()
+					}
+				})
+			}
+			else if($(this).attr("class") == "mymodify"){
+				// alert("修改")
+				modal2show()
+				sessionStorage.setItem("lid",id)
+			}
+		})
+		//toast初始化
+			$(".toast").toast({
+				autohide:true,
+				delay:1500
+			})
+		//搜索（1）
+		$("#search_submit").on("click",function(event){
+			var search_value = $("#search").val()
+			// console.log(search_value)
+			if($(".qiehuan").text() == '筛选学历')
+			{
+				$.get(baseURL+"/Jobhunter/findByEducation","education="+search_value,function(a){
+					if(a.status == 200){
+						$(".tbody1").empty()
+						a.data.forEach(function(item){
+								$(`<tr>
+								<td><input type="checkbox" value="`+item.id+`"></td>
+								<td>`+item.username+`</td>
+								<td>`+item.realname+`</td>
+								<td>`+item.telephone+`</td>
+								<td>`+item.gender+`</td>
+								<td>`+dateParse(item.birth)+`</td>
+								<td>`+item.education+`</td>
+								<td><a href="#" class="mymodify"><i class="iconfont icon-xiugai" style="color:#333;"></i></a>&nbsp;&nbsp;&nbsp;<a href="#" class="mydel"><i class="iconfont icon-shanchu" style="color:#333;"></i></a></td>
+							</tr>
+							`).appendTo(".tbody1")
+						})
+
+					}
+				})				
+			}
+			else if($(".qiehuan").text() == '筛选性别')
+			{
+				$.get(baseURL+"/Jobhunter/findByGender","gender="+search_value,function(a){
+					if(a.status == 200){
+						$(".tbody1").empty()
+						a.data.forEach(function(item){
+								$(`<tr>
+								<td><input type="checkbox" value="`+item.id+`"></td>
+								<td>`+item.username+`</td>
+								<td>`+item.realname+`</td>
+								<td>`+item.telephone+`</td>
+								<td>`+item.gender+`</td>
+								<td>`+dateParse(item.birth)+`</td>
+								<td>`+item.education+`</td>
+								<td><a href="#" class="mymodify"><i class="iconfont icon-xiugai" style="color:#333;"></i></a>&nbsp;&nbsp;&nbsp;<a href="#" class="mydel"><i class="iconfont icon-shanchu" style="color:#333;"></i></a></td>
+							</tr>
+							`).appendTo(".tbody1")									
+						})
+
+					}
+				})					
+			}
+			else if($(".qiehuan").text() == '不做筛选')
+			{
+				reload()
+			}
+		})	
+	})
+</script>
+
+<!-- modal 1 -->
+	<div class="modal modal1" tabindex="-1" role="dialog">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title">详情</h5>
+	        <button type="button">
+	          <span onclick="modalclose()">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	        <!-- <p>这是modal的默认内容</p> -->
+
+	      </div>
+	      <div class="modal-footer">
+	        <!-- <button type="button" class="btn btn-secondary">提交</button> -->
+	        <button type="button" class="btn btn-primary" onclick="modalclose()">关闭</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+<!-- /modal 1 -->
+<!-- modal 2 -->
+	<div class="modal modal2" tabindex="-1" role="dialog">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title">发布职位</h5>
+	        <button type="button">
+	          <span onclick="modal2close()">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	        <!-- <p>这是modal的默认内容</p> -->
+	       	<form>
+	       		<div class="row">
+	       			<div class="col">
+						<div class="form-group">
+						   	<label for="username">用户名</label>
+						    <input type="text" class="form-control" id="username" placeholder="Input username">
+						</div>	       				
+	       			</div>
+	       			<div class="col">
+	       				<div class="form-group">
+						   	<label for="realname">真实姓名</label>
+						    <input type="text" class="form-control" id="realname" placeholder="Input realname">
+						</div>
+	       			</div>
+	       		</div>
+	       		<div class="row">
+	       			<div class="col">
+						<div class="form-group">
+						   	<label for="password">密码</label>
+						    <input type="password" class="form-control" id="password" placeholder="Input password">
+						</div>	       				
+	       			</div>
+	       			<div class="col">
+	       				<div class="form-group">
+						   	<label for="education">学历</label>
+						    <input type="text" class="form-control" id="education" placeholder="Input education">
+						</div>
+	       			</div>
+	       		</div>
+				<div class="row">
+					<div class="col sex_select">
+						<div class="form-group">
+							<label>性别</label>
+						</div>
+						<div class="form-check form-check-inline">
+						  <input class="form-check-input" type="checkbox" id="gender1" value="男">
+						  <label class="form-check-label" for="gender1">男</label>
+						</div>
+						<div class="form-check form-check-inline">
+						  <input class="form-check-input" type="checkbox" id="gender2" value="女">
+						  <label class="form-check-label" for="gender2">女</label>
+						</div>
+					</div>
+					<div class="col">
+	       				<div class="form-group">
+						   	<label for="telephone">联系方式</label>
+						    <input type="text" class="form-control" id="telephone" placeholder="Input phoneNum">
+						</div>
+	       			</div>
+				</div>
+	       		<div class="row">
+	       			<div class="col">
+						<div class="form-group">
+						   	<label for="workTime">工作时间</label>
+						    <input type="text" class="form-control" id="workTime" placeholder="Input workTime">
+						</div>	       				
+	       			</div>
+	       			<div class="col">
+	       				<div class="form-group">
+						   	<label for="currentStatus">求职状态</label>
+						    <input type="text" class="form-control" id="currentStatus" placeholder="Input Status">
+						</div>
+	       			</div>
+	       		</div>
+				<div class="form-group">
+				    <label for="resume">简历</label>
+				    <textarea class="form-control" id="resume" rows="3" placeholder="简介一下"></textarea>
+				</div>
+			</form>
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" onclick="add_modify()">保存</button>
+	        <button type="button" class="btn btn-primary" onclick="modal2close()">关闭</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+<!-- /modal 2 -->
+<!-- toast -->
+	<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+  <div class="toast-header">
+    <!-- <img src="..." class="rounded mr-2" alt="..."> -->
+    <i class="fa fa-cog"></i>
+    <strong class="mr-auto">&nbsp;&nbsp;后台反馈</strong>
+    <small class="text-muted">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1秒前</small>
+    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="toast-body text-center">
+    未设定的默认内容！
+  </div>
+</div>
+<!-- /toast -->
+<div class="main">
+	<!-- 发布职位 -->
+	<div class="anniu row">
+		<div class="col-10"></div>
+		<div class="col">
+			<div class="btn btn-danger mb-1" onclick="modal2show()">添加用户</div>
+		</div>
+	</div>
+	<!-- 选项卡 -->
+	<div class="layui-tab">
+	  <ul class="layui-tab-title">
+	    <li class="layui-this">用户列表</li>
+	  </ul>
+  <div class="layui-tab-content">
+  <!-- 选项卡内容1 -->
+    <div class="layui-tab-item layui-show">
+    	<!-- 职位类型(1)筛选 -->
+    	<div class="row">
+	    	<div class="col-2">
+	    		<!-- 学历筛选 -->
+				<div class="input-group mb-3">
+				  <select class="custom-select xueli-select" id="xueli">
+				    <option selected value="">学历</option>
+				    <script>
+				    	$(function() {
+				    		$.get(baseURL+"/Jobhunter/findAll",function(a) {
+				    			if(a.status == 200) {
+				    				// alert(1)
+				    				var zu = []
+				    				// console.log(a.data)
+				    				a.data.forEach(function(item) {
+				    					zu.push(item.education)			
+				    				})
+				    				zu = chuchong(zu)
+				    				zu.forEach(function(item){
+				    					$(`
+							   				 <option value="`+item+`">`+item+`</option>
+							    			`).appendTo(".xueli-select")
+				    				})
+				    					
+
+				    			}
+				    		})
+				    		
+				    	})
+				    </script>
+				  </select>
+				</div>
+			</div>
+			<dib class="col-2">
+				<!-- 性别筛选 -->
+				<div class="input-group mb-3">
+				  <select class="custom-select sex-select" id="sex">
+				    <option selected value="">性别</option>
+				    <script>
+				    	$(function() {
+				    		$.get(baseURL+"/Jobhunter/findAll",function(a) {
+				    			if(a.status == 200) {
+				    				// alert(1)
+				    				var zu = []
+				    				a.data.forEach(function(item) {
+				    					zu.push(item.gender)			
+				    				})
+				    				zu = chuchong(zu)
+				    				zu.forEach(function(item){
+				    					$(`
+							   				 <option value="`+item+`">`+item+`</option>
+							    			`).appendTo(".sex-select")
+				    				})
+				    					
+
+				    			}
+				    		})
+				    		
+				    	})
+				    </script>
+				  </select>
+				</div>
+			</dib>
+			<div class="col-4"></div>
+			<!-- 查询 -->
+			<div class="col-3">
+				<div class="input-group mb-3">
+				  <div class="input-group-prepend">
+				    <button class="btn btn-outline-secondary dropdown-toggle qiehuan" type="button" data-toggle="dropdown">筛选类型</button>
+				    <div class="dropdown-menu open">
+				      <a class="dropdown-item item1" href="#">不做筛选</a>
+				      <a class="dropdown-item item2" href="#">筛选学历</a>
+				      <a class="dropdown-item item3" href="#">筛选性别</a>
+				    </div>
+				    <!-- 点击筛选的切换 -->
+				    <script>
+				    	$(function() {
+				    		$(".dropdown-item").on("click",function(event){
+				    			$(".qiehuan").text($(this).text())
+				    		})
+				    	})
+				    </script>
+				  </div>
+				  <input id="search" type="text" class="form-control" placeholder="搜索" style="text-indent: 1em;">
+					<div class="input-group-prepend">
+					    <span id="search_submit" class="input-group-text" style="cursor:pointer;" id="basic-addon1">提交</span>
+					</div>
+				</div>
+			</div>
+		</div>
+    	<!-- 表1 -->
+    	<table class="table table1 text-center">
+    		<thead class="thead1 table-dark">
+    			<tr>
+    				<td>#</td>
+    				<td>用户名</td>
+    				<td>姓名</td>
+    				<td>手机号</td>
+    				<td>性别</td>
+    				<td>出生年月</td>
+    				<td>最高学历</td>
+    				<td>操作</td>
+    			</tr>
+    		</thead>
+    		<tbody class="tbody1">
+    			
+    		</tbody>
+    	</table>
+    </div>
+
+  </div>
+</div>
+</div>

@@ -1,0 +1,323 @@
+<script>
+	var dateParse=(dataString)=>{
+		  if(dataString){
+		    let date = new Date(dataString);
+		    let Y = date.getFullYear() + '-';
+		    let M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+		    let D = (date.getDate()< 10 ? '0'+date.getDate() : date.getDate())+' ';
+		    let h = (date.getHours()< 10 ? '0'+date.getHours() : date.getHours())+ ':';
+		    let m = (date.getMinutes()< 10 ? '0'+date.getMinutes() : date.getMinutes())+ ':';
+		    let s = (date.getSeconds()< 10 ? '0'+date.getSeconds() : date.getSeconds());
+		    return Y+M+D+h+m+s;
+		  }else{
+		    return '';
+		  }
+		}
+</script>
+<style>
+	.modal {
+		/*z-index: !important*/
+		position: fixed;
+		left: 50%;
+		top: 65%;
+		transform: translate(-50%,-50%);
+	}
+	.aa {
+		position: absolute;
+		top: 40%;
+		left: 45%;
+	}
+	.toast {
+		position: absolute;
+		left: 50%;
+		top: 35%;
+		transform: translate(-50%,-50%);
+	}
+</style>
+<script>
+	//全局变量
+	var baseURL = "http://203.195.246.58:7777";
+	//加载
+	function reload() {
+		$.get(baseURL+"/EmploymentJobhunter/findAllWithJobhAndEmpl",function(a) {
+			if(a.status == 200) {
+				// alert(1)
+				$("tbody").empty()
+				a.data.forEach(function(item) {
+					// alert(1)
+						$(`<tr>
+							<td><input type="checkbox" value="`+item.id+`"></td>
+							<td>`+item.jobhunter.realname+`</td>
+							<td>`+item.jobhunter.telephone+`</td>
+							<td>`+item.employment.job+`</td>
+							<td><a href="#" class="xiangqing" onclick="modalshow(`+item.id+`)">查看</a></td>
+							<td>`+dateParse(item.askTime)+`</td>
+						</tr>
+						`).appendTo("tbody")
+				})
+			}
+		})
+	}
+	//toast的弹出
+	function toast_msg(msg) {
+		$(".toast").toast("show")
+		$(".toast .toast-body").text(msg)
+	}
+	//modal1显示
+	function modalshow(xiangqing_id){
+		$(".modal1").modal("show")
+		$(".modal-backdrop").remove()
+
+		// msg()
+		$.get(baseURL+"/EmploymentJobhunter/findAllWithJobhAndEmpl",function(a){
+			if(a.status == 200){
+				// alert(1)
+				// console.log(a.data)
+
+				for(let i = 0;i<a.data.length;i++)
+				{
+					// console.log(a.data[i].id,xiangqing_id,a.data)
+					if(a.data[i].id == xiangqing_id)
+					{
+						toast_msg("即将显示详细信息")
+
+						//modal的置空
+						$(".modal1 .modal-body").empty()
+
+						var item = a.data[i]
+						// a.data.forEach(function(item){
+							$(`<ul>
+									<li>ID：`+item.id+`</li>
+									<li>用户名：`+item.jobhunter.username+`</li>
+									<li>密码：`+item.jobhunter.password+`</li>
+									<li>真实姓名 ：`+item.jobhunter.realname+`</li>
+									<li>性别：`+item.jobhunter.gender+`</li>
+							<!--		<li>发布时间：`+dateParse(item.publishTime)+`</li> -->
+									<li>出生年月：`+item.jobhunter.birth+`</li>
+									<li>电话：`+item.jobhunter.telephone+`</li>
+									<li>学历：`+item.jobhunter.education+`</li>
+									<li>工作时间：`+item.jobhunter.workTime+`</li>
+									<li>当前状态：`+item.jobhunter.currentStatus+`</li>
+									<li>简介：`+item.jobhunter.resume+`</li>
+								</ul>
+								`).appendTo($(".modal1 .modal-body"))
+						// })
+						break;							
+					}
+					
+				}
+
+				
+			}
+		})
+	}
+	//modal1关闭
+	function modalclose(){
+		$(".modal1").modal("hide")
+	}
+	//modal2显示
+	function modal2show() {
+		$(".modal2").modal("show")
+		$(".modal-backdrop").remove()
+	}
+	//modal2关闭
+	function modal2close(){
+		$(".modal2").modal("hide")
+	}
+	//除重函数
+	function chuchong(arr){
+			var zu = []
+			for(let i = 0;i<arr.length;i++)
+			{
+				if(zu.indexOf(arr[i]) == -1)
+				{
+					zu.push(arr[i])
+				}
+			}
+			return zu
+		}
+</script>
+<script>
+	$(function(){
+		//重载
+		reload()
+
+		//toast初始化
+			$(".toast").toast({
+				autohide:true,
+				delay:1500
+			})
+
+
+	})
+</script>
+<div class="aa">
+	<button class="btn btn-danger" type="button" disabled>
+	  <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+	  Loading...
+	</button>
+	</div>
+<script>
+	setTimeout(function() {
+		$(".aa").empty()
+		},1000)
+</script>
+
+<!-- modal 1 -->
+	<div class="modal modal1" tabindex="-1" role="dialog">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title">详情</h5>
+	        <button type="button">
+	          <span onclick="modalclose()">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	        <!-- <p>这是modal的默认内容</p> -->
+
+	      </div>
+	      <div class="modal-footer">
+	        <!-- <button type="button" class="btn btn-secondary">提交</button> -->
+	        <button type="button" class="btn btn-primary" onclick="modalclose()">关闭</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+<!-- /modal 1 -->
+<!-- modal 2 -->
+	<div class="modal modal2" tabindex="-1" role="dialog">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title">发布职位</h5>
+	        <button type="button">
+	          <span onclick="modal2close()">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	        <!-- <p>这是modal的默认内容</p> -->
+	       	<form>
+	       		<div class="row">
+	       			<div class="col">
+						<div class="form-group">
+						   	<label for="username">用户名</label>
+						    <input type="text" class="form-control" id="username" placeholder="Enter email">
+						</div>	       				
+	       			</div>
+	       			<div class="col">
+	       				<div class="form-group">
+						   	<label for="realname">真实姓名</label>
+						    <input type="text" class="form-control" id="realname" placeholder="Enter email">
+						</div>
+	       			</div>
+	       		</div>
+	       		<div class="row">
+	       			<div class="col">
+						<div class="form-group">
+						   	<label for="password">密码</label>
+						    <input type="password" class="form-control" id="password" placeholder="Enter email">
+						</div>	       				
+	       			</div>
+	       			<div class="col">
+	       				<div class="form-group">
+						   	<label for="education">学历</label>
+						    <input type="text" class="form-control" id="education" placeholder="Enter email">
+						</div>
+	       			</div>
+	       		</div>
+				<div class="row">
+					<div class="col sex_select">
+						<div class="form-group">
+							<label>性别</label>
+						</div>
+						<div class="form-check form-check-inline">
+						  <input class="form-check-input" type="checkbox" id="gender1" value="男">
+						  <label class="form-check-label" for="gender1">男</label>
+						</div>
+						<div class="form-check form-check-inline">
+						  <input class="form-check-input" type="checkbox" id="gender2" value="女">
+						  <label class="form-check-label" for="gender2">女</label>
+						</div>
+					</div>
+					<div class="col">
+	       				<div class="form-group">
+						   	<label for="telephone">联系方式</label>
+						    <input type="text" class="form-control" id="telephone" placeholder="Enter email">
+						</div>
+	       			</div>
+				</div>
+	       		<div class="row">
+	       			<div class="col">
+						<div class="form-group">
+						   	<label for="workTime">工作时间</label>
+						    <input type="text" class="form-control" id="workTime" placeholder="Enter email">
+						</div>	       				
+	       			</div>
+	       			<div class="col">
+	       				<div class="form-group">
+						   	<label for="currentStatus">求职状态</label>
+						    <input type="text" class="form-control" id="currentStatus" placeholder="Enter email">
+						</div>
+	       			</div>
+	       		</div>
+				<div class="form-group">
+				    <label for="resume">简历</label>
+				    <textarea class="form-control" id="resume" rows="3" placeholder="简介一下"></textarea>
+				</div>
+			</form>
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" onclick="add_modify()">保存</button>
+	        <button type="button" class="btn btn-primary" onclick="modal2close()">关闭</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+<!-- /modal 2 -->
+<!-- toast -->
+	<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+  <div class="toast-header">
+    <!-- <img src="..." class="rounded mr-2" alt="..."> -->
+    <i class="fa fa-cog"></i>
+    <strong class="mr-auto">&nbsp;&nbsp;后台反馈</strong>
+    <small class="text-muted">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1秒前</small>
+    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="toast-body text-center">
+    未设定的默认内容！
+  </div>
+</div>
+<!-- /toast -->
+
+<div class="main">
+	<div class="layui-tab">
+	  	<ul class="layui-tab-title">
+	    	<li class="layui-this">求职列表</li>
+	  	</ul>
+	  	<div class="layui-tab-content">
+	  		<!-- 内容1选项卡 -->
+	    	<div class="layui-tab-item layui-show">
+	    		<div class="btn btn-outline-secondary btn-sm mb-1" style="margin-top:-20px;">待联系</div>
+	    		<table class="table text-center">
+	    			<thead>
+	    				<tr>
+	    					<td>#</td>
+	    					<td>求职人</td>
+	    					<td>联系方式</td>
+	    					<td>求职岗位</td>
+	    					<td>简历</td>
+	    					<td>申请时间</td>
+	    				</tr>
+	    			</thead>
+	    			<tbody>
+	    				
+	    			</tbody>
+	    		</table>
+	    	</div>
+	    	<!-- /内容1选项卡 -->
+	  </div>
+	</div>
+</div>

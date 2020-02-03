@@ -1,0 +1,548 @@
+﻿<style>
+	.modal {
+		/*z-index: !important*/
+		position: fixed;
+		left: 50%;
+		top: 65%;
+		transform: translate(-50%,-50%);
+	}
+	.toast {
+			position: absolute;
+			left: 50%;
+			top: 35%;
+			transform: translate(-50%,-50%);
+		}
+</style>
+<script>
+	//全局变量
+	var baseURL = "http://203.195.246.58:7777";
+	//加载
+	function reload() {
+		$.get(baseURL+"/Business/findAll",function(a) {
+			if(a.status == 200) {
+				// alert(1)
+				$("tbody").empty()
+				a.data.forEach(function(item) {
+					if(item.status == "审核通过")
+					{
+							$(`<tr>
+							<td><input type="checkbox" value="`+item.id+`"></td>
+							<td>`+item.name+`</td>
+							<td>`+item.contactName+`</td>
+							<td>`+item.contactPhone+`</td>
+							<td>`+item.industry+`</td>
+							<td>`+item.location+`</td>
+							<td>`+item.scale+`</td>
+							<td><a href="#" class="xiangqing" onclick="modalshow(`+item.id+`)">详情</a></td>
+							<td><a href="#" class="mymodify"><i class="iconfont icon-xiugai" style="color:#333;"></i></a>&nbsp;&nbsp;&nbsp;<a href="#" class="mydel"><i class="iconfont icon-shanchu" style="color:#333;"></i></a></td>
+						</tr>
+						`).appendTo("tbody")						
+					}
+
+				})
+			}
+		})
+	}
+	//modal1显示
+	function modalshow(xiangqing_id){
+		$(".modal1").modal("show")
+		$(".modal-backdrop").remove()
+
+		// msg()
+		$.get(baseURL+"/Business/findById","id="+xiangqing_id,function(a){
+			if(a.status == 200){
+				// alert(1)
+				// console.log(a.data)
+				toast_msg("即将显示详细信息")
+
+				//modal的置空
+				$(".modal1 .modal-body").empty()
+
+				var item = a.data
+				// a.data.forEach(function(item){
+					$(`<ul>
+							<li>企业名称：`+item.name+`</li>
+							<li>联系人：`+item.contactName+`</li>
+							<li>联系方式：`+item.contactPhone+`</li>
+							<li>行业：`+item.industry+`</li>
+							<li>所在地：`+item.location+`</li>
+							<li>公司规模：`+item.scale+`</li>
+							<li>审核状态：`+item.status+`</li>
+
+						</ul>
+						`).appendTo($(".modal1 .modal-body"))
+				// })
+				
+			}
+		})
+
+		
+	}
+	//modal1关闭
+	function modalclose(){
+		$(".modal1").modal("hide")
+	}
+	//modal2显示
+	function modal2show() {
+		$(".modal2").modal("show")
+		$(".modal-backdrop").remove()
+	}
+	//modal2关闭
+	function modal2close(){
+		$(".modal2").modal("hide")
+	}
+	//除重函数
+	function chuchong(arr){
+			var zu = []
+			for(let i = 0;i<arr.length;i++)
+			{
+				if(zu.indexOf(arr[i]) == -1)
+				{
+					zu.push(arr[i])
+				}
+			}
+			return zu
+		}
+	//修改
+	function modify() {
+		// alert(1)
+		var id = sessionStorage.getItem('lid')
+		sessionStorage.setItem("lid","")
+		var name = $("#name").val()
+		var contactName = $("#contactName").val()
+		var contactPhone = $("#contactPhone").val()
+		var industry = $("#industry").val()
+		var location = $("#location").val()
+		var scale = $("#scale").val()
+		var description = $("#description").val()
+
+		var data = {
+			id,
+			name,
+			contactName,
+			contactPhone,
+			industry,
+			location,
+			scale,
+			description
+		}
+		console.log(data)
+		$.post(baseURL+"/Business/saveOrUpdate",data,function(a){
+			// alert(1)
+			if(a.status == 200){
+				toast_msg("修改成功")
+				modal2close()
+				reload()
+			}
+		})
+	}
+	//toast的弹出
+	function toast_msg(msg) {
+		$(".toast").toast("show")
+		$(".toast .toast-body").text(msg)
+	}
+	</script>
+
+<script>
+	$(function() {
+		//重载
+		reload()
+		//删除
+		$("tbody").on("click","a",function(event){
+			var id = $(event.target).parents("tr").children().eq(0).children().eq(0).attr("value")
+			// console.log($(this).attr("class"))
+			if($(this).attr("class") == "mydel") {
+				$.post(baseURL+"/Business/deleteById","id="+id,function(a){
+					if(a.status == 200){
+						// alert("成功")
+						toast_msg("删除成功")
+						reload()
+					}
+				})
+			}
+			else if($(this).attr("class") == "mymodify"){
+				// alert("修改")
+				modal2show()
+				sessionStorage.setItem("lid",id)
+			}
+			//详情
+			// if($(this).attr("class") == "xiangqing")
+			// {
+			// 	alert("详情")
+
+			// }
+		})
+			//所在地的筛选
+			$(".suozaidi-select").change(function(){
+				// alert(1)
+				if($(".suozaidi-select").val() == "")
+				{
+					reload()
+				}
+				var location = $(this).val()
+				$.get(baseURL+"/Business/findByLocation","location="+location,function(a){
+					if(a.status == 200){
+						// alert(1)
+						toast_msg("筛选成功")
+						$("tbody").empty()
+						a.data.forEach(function(item){
+							if(item.status == "审核通过")
+							{
+									$(`<tr>
+									<td><input type="checkbox" value="`+item.id+`"></td>
+									<td>`+item.name+`</td>
+									<td>`+item.contactName+`</td>
+									<td>`+item.contactPhone+`</td>
+									<td>`+item.industry+`</td>
+									<td>`+item.location+`</td>
+									<td>`+item.scale+`</td>
+									<td><a href="#" class="xiangqing" onclick="modalshow(`+item.id+`)">详情</a></td>
+									<td><a href="#" class="mymodify"><i class="iconfont icon-xiugai" style="color:#333;"></i></a>&nbsp;&nbsp;&nbsp;<a href="#" class="mydel"><i class="iconfont icon-shanchu" style="color:#333;"></i></a></td>
+								</tr>
+								`).appendTo("tbody")						
+							}
+						})
+					}
+				})
+			})
+			//行业的筛选
+			$(".hangye-select").change(function(){
+				// alert(1)
+				if($(".hangye-select").val() == "")
+				{
+					reload()
+				}
+				var hangye = $(this).val()
+				$.get(baseURL+"/Business/findByIndustry","industry="+hangye,function(a){
+					if(a.status == 200){
+						// alert(1)
+						toast_msg("筛选成功")
+						$("tbody").empty()
+						a.data.forEach(function(item){
+							if(item.status == "审核通过")
+							{
+									$(`<tr>
+									<td><input type="checkbox" value="`+item.id+`"></td>
+									<td>`+item.name+`</td>
+									<td>`+item.contactName+`</td>
+									<td>`+item.contactPhone+`</td>
+									<td>`+item.industry+`</td>
+									<td>`+item.location+`</td>
+									<td>`+item.scale+`</td>
+									<td><a href="#" class="xiangqing" onclick="modalshow(`+item.id+`)">详情</a></td>
+									<td><a href="#" class="mymodify"><i class="iconfont icon-xiugai" style="color:#333;"></i></a>&nbsp;&nbsp;&nbsp;<a href="#" class="mydel"><i class="iconfont icon-shanchu" style="color:#333;"></i></a></td>
+								</tr>
+								`).appendTo("tbody")						
+							}
+						})
+					}
+				})
+			})
+			//规模的筛选
+			$(".guimo-select").change(function(){
+				// alert(1)
+				if($(".guimo-select").val() == "")
+				{
+					reload()
+				}
+				var guimo = $(this).val()
+				$.get(baseURL+"/Business/findByScale","scale="+guimo,function(a){
+					if(a.status == 200){
+						// alert(1)
+						toast_msg("筛选成功")
+						$("tbody").empty()
+						a.data.forEach(function(item){
+							if(item.status == "审核通过")
+							{
+									$(`<tr>
+									<td><input type="checkbox" value="`+item.id+`"></td>
+									<td>`+item.name+`</td>
+									<td>`+item.contactName+`</td>
+									<td>`+item.contactPhone+`</td>
+									<td>`+item.industry+`</td>
+									<td>`+item.location+`</td>
+									<td>`+item.scale+`</td>
+									<td><a href="#" class="xiangqing" onclick="modalshow(`+item.id+`)">详情</a></td>
+									<td><a href="#" class="mymodify"><i class="iconfont icon-xiugai" style="color:#333;"></i></a>&nbsp;&nbsp;&nbsp;<a href="#" class="mydel"><i class="iconfont icon-shanchu" style="color:#333;"></i></a></td>
+								</tr>
+								`).appendTo("tbody")						
+							}
+						})
+					}
+				})
+			})
+			//toast初始化
+				$(".toast").toast({
+					autohide:true,
+					delay:1500
+				})
+
+
+	})
+</script>
+
+<!-- modal 1 -->
+	<div class="modal modal1" tabindex="-1" role="dialog">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title">详情</h5>
+	        <button type="button">
+	          <span onclick="modalclose()">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	        <!-- <p>这是modal的默认内容</p> -->
+
+	      </div>
+	      <div class="modal-footer">
+	        <!-- <button type="button" class="btn btn-secondary">提交</button> -->
+	        <button type="button" class="btn btn-primary" onclick="modalclose()">关闭</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+<!-- /modal 1 -->
+<!-- modal 2 -->
+	<div class="modal modal2" tabindex="-1" role="dialog">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title">修改</h5>
+	        <button type="button">
+	          <span onclick="modal2close()">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	        <!-- <p>这是modal的默认内容</p> -->
+			<form>
+				<div class="row">
+					<div class="col">
+						<div class="form-group">
+				    		<label for="name">公司名称</label>
+				    		<input type="text" class="form-control" id="name" placeholder="输入公司名">
+						</div>
+					</div>
+					<div class="col">
+						<div class="form-group">
+				    		<label for="industry">所属行业</label>
+				    		<input type="text" class="form-control" id="industry" placeholder="输入公司所属行业">
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col">
+						<div class="form-group">
+				    		<label for="scale">公司规模</label>
+				    		<input type="text" class="form-control" id="scale" placeholder="输入公司规模">
+						</div>
+					</div>
+					<div class="col">
+						<div class="form-group">
+				    		<label for="location">所在城市</label>
+				    		<input type="text" class="form-control" id="location" placeholder="输入公司所在城市">
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col">
+						<div class="form-group">
+				    		<label for="contactName">联系人</label>
+				    		<input type="text" class="form-control" id="contactName" placeholder="输入你的名字">
+						</div>
+					</div>
+					<div class="col">
+						<div class="form-group">
+				    		<label for="contactPhone">联系方式</label>
+				    		<input type="text" class="form-control" id="contactPhone" placeholder="输入你的联系方式">
+						</div>
+					</div>
+				</div>
+				<!-- <div class="form-group">
+				    <label for="name">公司名称</label>
+				    <input type="text" class="form-control" id="name" placeholder="Enter email">
+				</div> -->
+				<!-- <div class="form-group">
+				    <label for="industry">所属行业</label>
+				    <input type="text" class="form-control" id="industry" placeholder="Enter email">
+				</div> -->
+				<!-- <div class="form-group">
+				    <label for="scale">公司规模</label>
+				    <input type="text" class="form-control" id="scale" placeholder="Enter email">
+				</div> -->
+				<!-- <div class="form-group">
+				    <label for="location">所在城市</label>
+				    <input type="text" class="form-control" id="location" placeholder="Enter email">
+				</div> -->
+				<!-- <div class="form-group">
+				    <label for="contactName">联系人</label>
+				    <input type="text" class="form-control" id="contactName" placeholder="Enter email">
+				</div> -->
+				<!-- <div class="form-group">
+				    <label for="contactPhone">联系方式</label>
+				    <input type="text" class="form-control" id="contactPhone" placeholder="Enter email">
+				</div> -->
+				<div class="form-group">
+				    <label for="description">公司简介</label>
+				    <textarea class="form-control" id="description" rows="3" placeholder="简介一下"></textarea>
+				</div>
+			</form>
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" onclick="modify()">确认修改</button>
+	        <button type="button" class="btn btn-primary" onclick="modal2close()">关闭</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+<!-- /modal 2 -->
+<!-- toast -->
+	<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+  <div class="toast-header">
+    <!-- <img src="..." class="rounded mr-2" alt="..."> -->
+    <i class="fa fa-cog"></i>
+    <strong class="mr-auto">&nbsp;&nbsp;后台反馈</strong>
+    <small class="text-muted">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1秒前</small>
+    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="toast-body text-center">
+    未设定的默认内容！
+  </div>
+</div>
+<!-- /toast -->
+
+<div class="main">
+	<div class="edit row">
+		<div class="col-2">
+			<div class="input-group mb-3">
+			  <select class="custom-select suozaidi-select" id="suozaidi">
+			    <option selected value="">所在地</option>
+			    <!-- <option value="1">One</option>
+			    <option value="2">Two</option>
+			    <option value="3">Three</option> -->
+			    <script>
+			    	$(function() {
+			    		$.get(baseURL+"/Business/findAll",function(a) {
+			    			if(a.status == 200) {
+			    				// alert(1)
+			    				var zu = []
+			    				a.data.forEach(function(item) {
+			    					zu.push(item.location)					
+			    				})
+			    				zu = chuchong(zu)
+			    				zu.forEach(function(item){
+			    					$(`
+						   				 <option value="`+item+`">`+item+`</option>
+						    			`).appendTo(".suozaidi-select")
+			    				})
+			    					
+
+			    			}
+			    		})
+			    		
+			    	})
+			    </script>
+			  </select>
+			</div>
+		</div>
+		<div class="col-2">
+			<div class="input-group mb-3">
+			  <select class="custom-select hangye-select" id="hangye">
+			    <option selected value="">行业</option>
+			    <script>
+			    	$(function() {
+			    		$.get(baseURL+"/Business/findAll",function(a) {
+			    			if(a.status == 200) {
+			    				// alert(1)
+			    				var zu = []
+			    				// console.log(a.data)
+			    				a.data.forEach(function(item) {
+			    					zu.push(item.industry)
+			    					// console.log(item.industry)					
+			    				})
+			    				zu = chuchong(zu)
+
+			    				zu.forEach(function(item){
+			    					$(`
+						   				 <option value="`+item+`">`+item+`</option>
+						    			`).appendTo(".hangye-select")
+			    				})
+			    			}
+			    		})
+			    		
+			    	})
+			    </script>
+			  </select>
+			</div>
+		</div>
+		<div class="col-2">
+			<div class="input-group mb-3">
+			  <select class="custom-select guimo-select" id="guimo">
+			    <option selected value="">规模</option>
+			    <script>
+			    	$(function() {
+			    		$.get(baseURL+"/Business/findAll",function(a) {
+			    			if(a.status == 200) {
+			    				// alert(1)
+			    				var zu = []
+			    				a.data.forEach(function(item) {
+			    					zu.push(item.scale)
+			    				})
+			    				zu = chuchong(zu)
+			    				zu.forEach(function(item){
+			    					$(`
+						   				 <option value="`+item+`">`+item+`</option>
+						    			`).appendTo(".guimo-select")
+			    				})
+			    			}
+			    		})
+			    		
+			    	})
+			    </script>
+			  </select>
+			</div>
+		</div>
+	</div>
+	<table class="table text-center">
+		<thead>
+			<tr>
+				<td>#</td>
+				<td>企业名称</td>
+				<td>联系人</td>
+				<td>联系方式</td>
+				<td>行业</td>
+				<td>所在地</td>
+				<td>公司规模</td>
+				<td>详情</td>
+				<td>操作</td>
+			</tr>
+		</thead>
+		<tbody>
+			<!-- <tr>
+				<td><input type="checkbox"></td>
+				<td>333</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>北京</td>
+				<td>1</td>
+				<td><a href="#">详情</a></td>
+				<td><a href="#"><i class="iconfont icon-xiugai" style="color:#333;"></i></a>&nbsp;&nbsp;&nbsp;<a href="#"><i class="iconfont icon-shanchu" style="color:#333;"></i></a></td>
+			</tr>
+
+			<tr>
+				<td><input type="checkbox"></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr> -->
+		</tbody>
+	</table>
+</div>

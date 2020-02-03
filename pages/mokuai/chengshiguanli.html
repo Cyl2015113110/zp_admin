@@ -1,0 +1,178 @@
+<style>
+	.chengshi {
+
+	}
+	.kuai {
+		border: 1px solid black;
+	}
+	.province {
+		background-color: black;
+		color: #fff;
+		height: 3em;
+		line-height: 3em;
+		text-indent: 1em;
+	}
+/*	.city span {
+		margin-right: 2em;
+		width: 100px;
+	}*/
+</style>
+
+<script>
+	function reload() {
+		$.get(baseURL+"/City/findAll",function(a) {
+			if(a.status == 200){
+				// $(".city").attr("class").filter(function(index,item){
+				// 	return ($(this).attr("class") != "add_btn")&&($(this).attr("class") != "input_msg")
+				// }).remove()
+				// console.log( $(".city div").attr("class"))
+
+				$(".city").empty()
+				$(`
+			<!-- 添加按钮 -->
+			<div class="col-1 add_btn">
+				<div class="btn-sm btn-primary">添加</div>
+			</div>
+			<!-- 添加提交框 -->
+			<div class="col-2 input_msg" style="display:none;">
+				<div class="input-group mb-3 input-group-sm">
+				  <input id="input_name" type="text" class="form-control input_name" placeholder="Input">
+				  <div class="input-group-append">
+				    <button class="btn btn-outline-secondary sub_btn" type="button">Submit</button>
+				    <button class="btn btn-outline-secondary cancel_btn" type="button">Cancel</button>
+				  </div>
+				</div>
+			</div>
+					`).appendTo(".city")
+				a.data.reverse().forEach(function(item){
+					$(`
+						<div class="col-1" value="`+item.id+`">`+item.name+`</div>
+						`).prependTo(".city")
+				})
+			}
+		})		
+	}
+</script>
+
+<script>
+	$(function(){
+		
+		//重载
+		reload()
+		//添加按钮
+		$(".chengshi").on("click",'.add_btn',function(event){
+
+			$(this).css("display","none")
+			// $(".add_btn").remove()
+
+			$(this).next(".input_msg").css("display","block")
+		})
+		//提交按钮
+		$(".chengshi").on("click",'.sub_btn',function(event){
+			$(this).parents(".input_msg").prev(".add_btn").css("display","block")
+			$(this).parents(".input_msg").css("display","none")
+
+			var input_name_val = $(this).parents("div").prev(".input_name").val()
+			// console.log($(this).parents("div"))
+
+			//数据处理
+			var zu = input_name_val.split(";")
+			var data = "";
+			for(let i = 0;i<zu.length;i++)
+			{
+				if(i == 0)
+				{
+					data += "name="+zu[i]
+				}
+				else
+				{
+					data += "&name="+zu[i]
+				}
+			}
+			// console.log(data)
+
+			$.post(baseURL+"/City/saveOrUpdate",data,function(a){
+				if(a.status == 200){
+					toast_msg("添加成功")
+					reload()
+				}
+			})
+		})
+		//取消按钮
+		$(".chengshi").on("click",".cancel_btn",function(event){
+			$(this).parents(".input_msg").prev(".add_btn").css("display","block")
+			$(this).parents(".input_msg").css("display","none")		
+		})
+		//添加省份
+		$(".add_province_btn").on("click",function(event){
+			$(`
+	<div class="kuai mt-4" style="margin-top:20px;">
+		<div class="province new_province" style="position:relative;">
+			
+			<!-- 添加城市提交框 -->
+			<div class="col-2 input_chengshi" style="position:relative;top:8px;">
+				<div class="input-group mb-3 input-group-sm">
+				  <input id="input_csname" type="text" class="form-control input_csname" placeholder="Input">
+				  <div class="input-group-append">
+				    <button class="btn btn-outline-light subcs_btn" type="button">Submit</button>
+				  </div>
+				</div>
+			</div>
+
+
+		</div>
+		<div class="city py-3 px-4 row text-center">
+			<!-- 添加按钮 -->
+			<div class="col-1 add_btn">
+				<div class="btn-sm btn-primary">添加</div>
+			</div>
+			<!-- 添加提交框 -->
+			<div class="col-2 input_msg" style="display:none;">
+				<div class="input-group mb-3 input-group-sm">
+				  <input id="input_name" type="text" class="form-control input_name" placeholder="Input">
+				  <div class="input-group-append">
+				    <button class="btn btn-outline-secondary sub_btn" type="button">Submit</button>
+				    <button class="btn btn-outline-secondary cancel_btn" type="button">Cancel</button>
+				  </div>
+				</div>
+			</div>
+		</div>
+	</div>				
+				`).appendTo(".chengshi")
+		})	
+		//submit_new_province
+		$(".chengshi").on("click",".subcs_btn",function(event){
+			var name = $(".input_csname").val()
+			$(".input_chengshi").remove()
+			$(".new_province").text(name)
+		})
+
+
+	})
+</script>
+<div class="chengshi">
+	<div class="add text-right row">
+		<div class="col-9"></div>
+		<div class="btn btn-danger add_province_btn col-2">添加省份</div>
+	</div>
+	<div class="kuai mt-4">
+		<div class="province">北京</div>
+		<div class="city py-3 px-4 row text-center">
+			<!-- <div class="col-1">天安门</div> -->
+			<!-- 添加按钮 -->
+<!-- 			<div class="col-1 add_btn">
+				<div class="btn-sm btn-primary">添加</div>
+			</div> -->
+			<!-- 添加提交框 -->
+<!-- 			<div class="col-2 input_msg" style="display:none;">
+				<div class="input-group mb-3 input-group-sm">
+				  <input id="input_name" type="text" class="form-control input_name" placeholder="Input">
+				  <div class="input-group-append">
+				    <button class="btn btn-outline-secondary sub_btn" type="button">Submit</button>
+				    <button class="btn btn-outline-secondary cancel_btn" type="button">Cancel</button>
+				  </div>
+				</div>
+			</div> -->
+		</div>
+	</div>
+</div>

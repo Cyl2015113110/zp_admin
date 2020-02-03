@@ -1,0 +1,95 @@
+<style>
+	.modal {
+		/*z-index: !important*/
+		position: fixed;
+		left: 50%;
+		top: 65%;
+		transform: translate(-50%,-50%);
+	}
+	.toast {
+			position: absolute;
+			left: 50%;
+			top: 35%;
+			transform: translate(-50%,-50%);
+			z-index: 1051;
+		}
+	.aa {
+			position: absolute;
+			top: 40%;
+			left: 45%;
+/*			z-index: 1;
+			opacity: 1;*/
+		}
+</style>
+<div class="aa">
+	<button class="btn btn-danger" type="button" disabled>
+	  <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+	  Loading...
+	</button>
+	</div>
+<script>
+	setTimeout(function() {
+		$(".aa").empty()
+		},1500)
+</script>
+
+<script>
+	//全局变量
+	var baseURL = "http://203.195.246.58:7777";
+	//加载
+
+	//toast的弹出
+	function toast_msg(msg) {
+		$(".toast").toast("show")
+		$(".toast .toast-body").text(msg)
+	}
+</script>
+
+<script>
+	$(function(){
+		//load各个页面
+		$(".cont").load("./pages/shenhe/shangjia.html")
+		$(".xuanka li").on("click",function(event){
+			if($(this).text() == '商家审核')
+			{
+				$(".cont").load("./pages/shenhe/shangjia.html")
+			}
+			if($(this).text() == '招聘审核')
+			{
+				$(".cont").load("./pages/shenhe/zhaopin.html")
+			}
+		})
+		//toast初始化
+			$(".toast").toast({
+				autohide:true,
+				delay:1500
+			})
+	})
+</script>
+<!-- toast -->
+	<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+  <div class="toast-header">
+    <!-- <img src="..." class="rounded mr-2" alt="..."> -->
+    <i class="fa fa-cog"></i>
+    <strong class="mr-auto">&nbsp;&nbsp;后台反馈</strong>
+    <small class="text-muted">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1秒前</small>
+    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="toast-body text-center">
+    未设定的默认内容！
+  </div>
+</div>
+<!-- /toast -->
+<div class="main">
+	<div class="layui-tab">
+	  	<ul class="layui-tab-title xuanka">
+	    	<li class="layui-this">商家审核</li>
+	    	<li>招聘审核</li>
+	    </ul>
+	  	<div class="layui-tab-content cont">
+			<!-- 这是选项卡的内容 -->
+	  	</div>
+	</div>
+</div>

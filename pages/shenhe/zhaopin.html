@@ -1,0 +1,482 @@
+<script>
+	//加载
+	function reload() {
+		$.get(baseURL+"/Employment/findAll",function(a) {
+			if(a.status == 200) {
+				// alert(1)
+				$(".tbody1").empty()
+				a.data.forEach(function(item) {
+					if(item.auditStatus == "null"||item.auditStatus == ""||item.auditStatus == '待审核'||item.auditStatus == '审核通过'||item.auditStatus == '拒绝')
+					{
+							var status1,status2,status3
+
+							if(item.auditStatus == "null"||item.auditStatus == ""||item.auditStatus == '待审核')
+							{
+								status1 = "block";
+								status2 = "none";
+								status3 = "none";
+							}
+							else if(item.auditStatus == '审核通过')
+							{
+								status1 = "none";
+								status2 = "block";
+								status3 = "none";
+							}
+							else if(item.auditStatus == '拒绝')
+							{
+								status1 = "none";
+								status2 = "none";
+								status3 = "block";
+							}
+
+							$(`<tr>
+							<td><input type="checkbox" value="`+item.id+`"></td>
+							<td>`+item.title+`</td>
+							<td>`+item.contactName+`</td>
+							<td>`+item.contactPhone+`</td>
+							<td>`+item.job+`</td>
+							<td>`+item.publishTime+`</td>
+							<td><a href="#" class="xiangqing" onclick="modalshow(`+item.id+`)">详情</a></td>
+							<td width="200px">
+								<div class="shenhe" style="display:`+status1+`;">
+									<div class="btn btn-sm btn-success">通过</div>&nbsp;&nbsp;
+									<div class="btn btn-sm btn-danger">拒绝</div>								
+								</div>
+								<div class="pass" style="color:green;display:`+status2+`;">审核通过</div>
+								<div class="jujue" style="color:red;display:`+status3+`;">已拒绝</div>
+							</td>
+						</tr>
+						`).appendTo(".tbody1")						
+					}
+
+
+					
+				})
+			}
+		})
+	}
+	//除重函数
+	function chuchong(arr){
+			var zu = []
+			for(let i = 0;i<arr.length;i++)
+			{
+				if(zu.indexOf(arr[i]) == -1)
+				{
+					zu.push(arr[i])
+				}
+			}
+			return zu
+		}
+	//modal1显示
+	function modalshow(xiangqing_id){
+		$(".modal1").modal("show")
+		$(".modal-backdrop").remove()
+
+		// msg()
+		$.get(baseURL+"/Employment/findById","id="+xiangqing_id,function(a){
+			if(a.status == 200){
+				// alert(1)
+				// console.log(a.data)
+				toast_msg("即将显示详细信息")
+
+				//modal的置空
+				$(".modal1 .modal-body").empty()
+
+				var item = a.data
+				// a.data.forEach(function(item){
+					$(`<ul>
+							<li>招聘标题：`+item.title+`</li>
+							<li>发布人：`+item.contactName+`</li>
+							<li>联系方式：`+item.contactPhone+`</li>
+							<li>职位：`+item.job+`</li>
+							<li>发布时间：`+item.publishTime+`</li>
+							<li>福利：`+item.welfare+`</li>
+							<li>奖金：`+item.salary+`</li>
+							<li>简介：`+item.description+`</li>
+							<li>状态：`+item.status+`</li>
+							<li>招聘数量：`+item.num+`</li>
+							<li>商家ID：`+item.businessId+`</li>
+							<li>工作时长：`+item.workingHours+`</li>
+							<li>职位ID：`+item.jobId+`</li>
+							<li>省份：`+item.province+`</li>
+							<li>城市：`+item.city+`</li>
+							<li>开始工作时间：`+item.startTime+`</li>
+							<li>结束工作时间：`+item.endTime+`</li>
+
+							<li>`+item.id+`</li>
+							<li>`+item.auditStatus+`</li>
+						</ul>
+						`).appendTo($(".modal1 .modal-body"))
+				// })
+				
+			}
+		})
+
+		
+	}
+	//modal1关闭
+	function modalclose(){
+		$(".modal1").modal("hide")
+	}
+</script>
+
+<script>
+	$(function(){
+		//加载
+		reload()
+		//操作
+		$(".tbody1").on("click",".btn-success",function(event){
+			var auditStatus = "审核通过"
+			var id = $(this).parents("tr").children().eq(0).children().eq(0).attr("value")
+			var title,contactName,contactPhone,job,welfare,salary,description,status,num,businessId,workingHours,jobId,city,province
+			// startTime,endTime,publishTime
+			// console.log(id)
+
+			$.ajax(baseURL+"/Employment/findById",{
+				async:false,
+				type:"GET",
+				data:"id="+id,
+				success:function(a){
+
+							title = a.data.title
+							contactName = a.data.contactName
+							contactPhone = a.data.contactPhone
+							job = a.data.job
+							// publishTime = a.data.publishTime
+							welfare = a.data.welfare
+							salary = a.data.salary
+							description = a.data.description
+							status = a.data.status
+							num = a.data.num
+							businessId = a.data.businessId
+							workingHours = a.data.workingHours
+							jobId = a.data.jobId					
+							city = a.data.city					
+							province = a.data.province					
+							// startTime = a.data.startTime					
+							// endTime = a.data.endTime	
+
+							// console.log(a.data)
+				}
+			})
+
+			var data = {
+				id,
+				title,
+				contactName,
+				contactPhone,
+				job,
+				// publishTime,
+				welfare,
+				salary,
+				description,
+				status,
+				num,
+				businessId,
+				workingHours,
+				jobId,
+				city,
+				province,
+				// startTime,
+				// endTime,
+				auditStatus
+			}
+			console.log(data)
+			$.post(baseURL+"/Employment/saveOrUpdate",data,function(a){
+				// alert(1)
+				if(a.status == 200){
+					toast_msg("审核通过")
+
+					var search_value = $("#search").val()
+					// console.log(search_value != ""||search_value != "null")
+					if( search_value != ""||search_value != "null")
+					{	
+						reload()
+						$("#search_submit").trigger("click")
+					}
+					else 
+					{
+						reload()
+					}
+					
+				}
+			})
+
+		})
+		$(".tbody1").on("click",".btn-danger",function(event){
+			var auditStatus = "拒绝"
+			var id = $(this).parents("tr").children().eq(0).children().eq(0).attr("value")
+			var title,contactName,contactPhone,job,publishTime,welfare,salary,description,status,num,businessId,workingHours,jobId,city,province,startTime,endTime
+			// console.log(id)
+
+			$.ajax(baseURL+"/Employment/findById",{
+				async:false,
+				type:"GET",
+				data:"id="+id,
+				success:function(a){
+
+							title = a.data.title
+							contactName = a.data.contactName
+							contactPhone = a.data.contactPhone
+							job = a.data.job
+							// publishTime = a.data.publishTime
+							welfare = a.data.welfare
+							salary = a.data.salary
+							description = a.data.description
+							status = a.data.status
+							num = a.data.num
+							businessId = a.data.businessId
+							workingHours = a.data.workingHours
+							jobId = a.data.jobId					
+							city = a.data.city					
+							province = a.data.province					
+							// startTime = a.data.startTime					
+							// endTime = a.data.endTime				
+
+				}
+			})
+
+			var data = {
+				id,
+				title,
+				contactName,
+				contactPhone,
+				job,
+				// publishTime,
+				welfare,
+				salary,
+				description,
+				status,
+				num,
+				businessId,
+				workingHours,
+				jobId,
+				city,
+				province,
+				// startTime,
+				// endTime,
+				auditStatus
+			}
+			$.post(baseURL+"/Employment/saveOrUpdate",data,function(a){
+				if(a.status == 200){
+					toast_msg("已拒绝")
+
+					var search_value = $("#search").val()
+					if( search_value != ""||search_value != "null")
+					{
+						reload()
+						$("#search_submit").trigger()
+						
+					}
+					else 
+					{
+						reload()
+					}
+				}
+			})
+		})
+
+
+		//搜索（1）
+		$("#search_submit").on("click",function(event){
+			var search_value = $("#search").val()
+			// console.log(search_value)
+			if($(".qiehuan").text() == '招聘职位')
+			{
+				$.get(baseURL+"/Employment/findByJob",function(a){
+					if(a.status == 200){
+								$(".tbody1").empty()
+								// console.log(a.data)
+								a.data.forEach(function(item){
+									if(item.job == search_value)
+									{
+										if(item.auditStatus == "null"||item.auditStatus == (null)||item.auditStatus == ""||item.auditStatus == '待审核'||item.auditStatus == '审核通过'||item.auditStatus == '拒绝')
+										{
+											// alert(1)
+												var status1,status2,status3
+
+												if(item.auditStatus == "null"||item.auditStatus == (null)||item.auditStatus == ""||item.auditStatus == '待审核')
+												{
+													status1 = "block";
+													status2 = "none";
+													status3 = "none";
+												}
+												else if(item.auditStatus == '审核通过')
+												{
+													status1 = "none";
+													status2 = "block";
+													status3 = "none";
+												}
+												else if(item.auditStatus == '拒绝')
+												{
+													status1 = "none";
+													status2 = "none";
+													status3 = "block";
+												}
+
+												$(`<tr>
+												<td><input type="checkbox" value="`+item.id+`"></td>
+												<td>`+item.title+`</td>
+												<td>`+item.contactName+`</td>
+												<td>`+item.contactPhone+`</td>
+												<td>`+item.job+`</td>
+												<td>`+item.publishTime+`</td>
+												<td><a href="#" class="xiangqing" onclick="modalshow(`+item.id+`)">详情</a></td>
+												<td width="200px">
+													<div class="shenhe" style="display:`+status1+`;">
+														<div class="btn btn-sm btn-success">通过</div>&nbsp;&nbsp;
+														<div class="btn btn-sm btn-danger">拒绝</div>								
+													</div>
+													<div class="pass" style="color:green;display:`+status2+`;">审核通过</div>
+													<div class="jujue" style="color:red;display:`+status3+`;">已拒绝</div>
+												</td>
+											</tr>
+											`).appendTo(".tbody1")						
+										}
+									}
+
+						})
+
+					}
+				})				
+			}
+			else if($(".qiehuan").text() == '招聘标题')
+			{
+				$.get(baseURL+"/Employment/findAll",function(a){
+					if(a.status == 200){
+								$(".tbody1").empty()
+								a.data.forEach(function(item){
+									if(item.title == search_value)
+									{
+										// console.log(item.auditStatus)
+										if(item.auditStatus == "null"||item.auditStatus == (null)||item.auditStatus == ""||item.auditStatus == '待审核'||item.auditStatus == '审核通过'||item.auditStatus == '拒绝'||item.auditStatus == '已拒绝')
+										{
+												var status1,status2,status3
+
+												if(item.auditStatus == "null"||item.auditStatus == (null)||item.auditStatus == ""||item.auditStatus == '待审核')
+												{
+													status1 = "block";
+													status2 = "none";
+													status3 = "none";
+												}
+												else if(item.auditStatus == '审核通过')
+												{
+													status1 = "none";
+													status2 = "block";
+													status3 = "none";
+												}
+												else if(item.auditStatus == '拒绝'||item.auditStatus == '已拒绝')
+												{
+													status1 = "none";
+													status2 = "none";
+													status3 = "block";
+												}
+
+												$(`<tr>
+												<td><input type="checkbox" value="`+item.id+`"></td>
+												<td>`+item.title+`</td>
+												<td>`+item.contactName+`</td>
+												<td>`+item.contactPhone+`</td>
+												<td>`+item.job+`</td>
+												<td>`+item.publishTime+`</td>
+												<td><a href="#" class="xiangqing" onclick="modalshow(`+item.id+`)">详情</a></td>
+												<td width="200px">
+													<div class="shenhe" style="display:`+status1+`;">
+														<div class="btn btn-sm btn-success">通过</div>&nbsp;&nbsp;
+														<div class="btn btn-sm btn-danger">拒绝</div>								
+													</div>
+													<div class="pass" style="color:green;display:`+status2+`;">审核通过</div>
+													<div class="jujue" style="color:red;display:`+status3+`;">已拒绝</div>
+												</td>
+											</tr>
+											`).appendTo(".tbody1")	
+										}
+					
+									}						
+						})
+
+					}
+				})					
+			}
+			else if($(".qiehuan").text() == '清除筛选')
+			{
+				$("#search").val("")
+				reload()
+			}
+		})	
+
+	})
+</script>
+
+<!-- modal 1 -->
+	<div class="modal modal1" tabindex="-1" role="dialog">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title">详情</h5>
+	        <button type="button">
+	          <span onclick="modalclose()">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	        <!-- <p>这是modal的默认内容</p> -->
+
+	      </div>
+	      <div class="modal-footer">
+	        <!-- <button type="button" class="btn btn-secondary">提交</button> -->
+	        <button type="button" class="btn btn-primary" onclick="modalclose()">关闭</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+<!-- /modal 1 -->
+
+<div class="fuli">
+	<!-- 全部筛选 -->
+	<div class="row">
+		<div class="col-3">
+			<!-- 全部筛选 -->
+				<div class="input-group mb-3">
+				  <div class="input-group-prepend">
+				    <button class="btn btn-outline-secondary dropdown-toggle qiehuan" type="button" data-toggle="dropdown">筛选类型</button>
+				    <div class="dropdown-menu open">
+				      <a class="dropdown-item item1" href="#">清除筛选</a>
+				      <a class="dropdown-item item2" href="#">招聘职位</a>
+				      <a class="dropdown-item item3" href="#">招聘标题</a>
+				    </div>
+				    <!-- 点击筛选的切换 -->
+				    <script>
+				    	$(function() {
+				    		$(".dropdown-item").on("click",function(event){
+				    			$(".qiehuan").text($(this).text())
+				    		})
+				    	})
+				    </script>
+				  </div>
+				  <input id="search" type="text" class="form-control" placeholder="搜索" style="text-indent: 1em;">
+					<div class="input-group-prepend">
+					    <span id="search_submit" class="input-group-text" style="cursor:pointer;" id="basic-addon1">提交</span>
+					</div>
+				</div>
+			</div>
+			<!-- 表 -->
+	    	<table class="table table1 text-center">
+	    		<thead class="thead1 table-dark">
+	    			<tr>
+	    				<td>#</td>
+	    				<td>招聘标题</td>
+	    				<td>发布人</td>
+	    				<td>联系方式</td>
+	    				<td>职位</td>
+	    				<td>发布时间</td>
+	    				<td>详情</td>
+	    				<td>状态</td>
+	    			</tr>
+	    		</thead>
+	    		<tbody class="tbody1">
+	    			
+	    		</tbody>
+	    	</table>
+		
+	</div>
+</div>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>chuchong</title>
+	<script>
+	var arr = [1,1,2,2,3,3]
+		function chuchong(arr){
+			var zu = []
+			for(let i = 0;i<arr.length;i++)
+			{
+				if(zu.indexOf(arr[i]) == -1)
+				{
+					zu.push(arr[i])
+				}
+			}
+			return zu
+		}
+		console.log(chuchong(arr))
+	</script>
+</head>
+<body>
+	
+</body>
+</html>

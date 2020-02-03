@@ -1,0 +1,170 @@
+<script>
+	//加载
+	function reload() {
+		$.get(baseURL+"/Welfare/findAll",function(a) {
+			if(a.status == 200) {
+				// alert(1)
+				$(".tbody1").empty()
+				var text = "";
+				var color = "";
+				var text_color = ""
+				a.data.forEach(function(item) {
+					if(item.status == '使用中'||item.status == '被冻结')
+					{
+						if(item.status == '使用中') { text = "冻结" ; color = "btn-warning" ; text_color = "red" }
+							else { text = "恢复" ; color = "btn-success" ; text_color = "green" }
+							$(`<tr>
+								<td><input type="checkbox" value="`+item.id+`"></td>
+								<td>`+item.name+`</td>
+								<td style="color:`+text_color+`">`+item.status+`</td>
+								<td><div class="btn caozuo `+color+`">`+text+`</div></td>
+							</tr>
+							`).appendTo(".tbody1")							
+					}
+					
+				})
+			}
+		})
+	}
+	//除重函数
+	function chuchong(arr){
+			var zu = []
+			for(let i = 0;i<arr.length;i++)
+			{
+				if(zu.indexOf(arr[i]) == -1)
+				{
+					zu.push(arr[i])
+				}
+			}
+			return zu
+		}
+</script>
+
+<script>
+	$(function(){
+		//加载
+		reload()
+		//操作
+		$(".tbody1").on("click",".caozuo",function(event){
+			var val = $(this).text()
+			var id = $(this).parents("tr").children().eq(0).children().eq(0).attr("value")
+
+			var status = ""
+			var name = $(this).parents("tr").children().eq(1).text()
+			// console.log(val)
+			if(val == '恢复')
+			{
+				status = "使用中";
+			}
+			else if(val == '冻结')
+			{
+				status = "被冻结"
+			}
+
+			var data ={
+				id,
+				name,
+				status
+			}
+			$.post(baseURL+"/Welfare/saveOrUpdate",data,function(a){
+				if(a.status == 200){
+					toast_msg("正在改变权限中...")
+					reload()
+				}
+			})
+		})
+		//全部的筛选
+		$(".quanbu-select").change(function(){
+			// alert(1)
+			if($(".quanbu-select").val() == "")
+			{
+				$(".tbody1").empty()
+				reload()
+			}
+			else{
+				var name = $(this).val()
+				$.get(baseURL+"/Welfare/findAll",function(a){
+					if(a.status == 200){
+						// alert(1)
+						toast_msg("筛选成功")
+						$(".tbody1").empty()
+						a.data.forEach(function(item){
+							if(item.name == name)
+							{
+								if(item.status == '使用中'||item.status == '被冻结')
+								{
+									if(item.status == '使用中') { text = "冻结" ; color = "btn-warning" ; text_color = "red" }
+										else { text = "恢复" ; color = "btn-success" ; text_color = "green" }
+										$(`<tr>
+											<td><input type="checkbox" value="`+item.id+`"></td>
+											<td>`+item.name+`</td>
+											<td style="color:`+text_color+`">`+item.status+`</td>
+											<td><div class="btn caozuo `+color+`">`+text+`</div></td>
+										</tr>
+										`).appendTo(".tbody1")							
+								}									
+							}
+				
+						})
+					}
+				})				
+			}
+
+		})
+
+	})
+</script>
+
+
+
+<div class="fuli">
+	<!-- 全部筛选 -->
+	<div class="row">
+		<div class="col-2">
+			<!-- 全部筛选 -->
+			<div class="input-group mb-3">
+			  <select class="custom-select quanbu-select" id="quanbu">
+			    <option selected value="">全部</option>
+			    <script>
+			    	$(function() {
+			    		$.get(baseURL+"/Welfare/findAll",function(a) {
+			    			if(a.status == 200) {
+			    				// alert(1)
+			    				var zu = []
+			    				// console.log(a.data)
+			    				a.data.forEach(function(item) {
+			    					zu.push(item.name)			
+			    				})
+			    				zu = chuchong(zu)
+			    				zu.forEach(function(item){
+			    					$(`
+						   				 <option value="`+item+`">`+item+`</option>
+						    			`).appendTo(".quanbu-select")
+			    				})
+			    					
+
+			    			}
+			    		})
+			    		
+			    	})
+			    </script>
+			  </select>
+			</div>
+			</div>
+			<!-- 表 -->
+	    	<table class="table table1 text-center">
+	    		<thead class="thead1 table-dark">
+	    			<tr>
+	    				<td>#</td>
+	    				<td>福利名称</td>
+	    				<td>状态</td>
+	    				<td>操作</td>
+	    			</tr>
+	    		</thead>
+	    		<tbody class="tbody1">
+	    			
+	    		</tbody>
+	    	</table>
+		
+	</div>
+</div>
